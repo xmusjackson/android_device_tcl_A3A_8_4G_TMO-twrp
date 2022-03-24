@@ -1,0 +1,10 @@
+ro.product.brand=TCL
+ro.product.name=9027W
+ro.product.device=A3A_8_4G_TMO
+ro.build.product=A3A_8_4G_TMO
+ro.mediatek.chip_ver=S01
+ro.mediatek.platform=MT6739
+ro.allow.mock.location=0
+ro.debuggable=1
+sys.usb.product="ALCATEL 3T 8 TMO"
+persist.sys.usb.config=adb
