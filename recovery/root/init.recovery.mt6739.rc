@@ -58,7 +58,6 @@ service keymaster_attestation-1-1 /vendor/bin/hw/vendor.mediatek.hardware.keymas
     seclabel u:r:recovery:s0
 
 on init
-
     start hwservicemanager
     start keymaster_attestation-1-1
     setprop sys.usb.configfs 1
@@ -69,7 +68,7 @@ on init
 
 on fs
     export LD_LIBRARY_PATH /system/lib:/vendor/lib:/vendor/lib/hw:/system/lib/hw
-    
+
 on late-fs
     #start hal(s) for decryption
     class_start early_hal
