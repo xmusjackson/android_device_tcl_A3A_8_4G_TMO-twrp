@@ -58,6 +58,7 @@ service keymaster_attestation-1-1 /vendor/bin/hw/vendor.mediatek.hardware.keymas
     seclabel u:r:recovery:s0
 
 on init
+
     start hwservicemanager
     start keymaster_attestation-1-1
     setprop sys.usb.configfs 1
@@ -66,39 +67,9 @@ on init
     chmod 0775 /config/sdcardfs
     chown system package_info /config/sdcardfs
 
-    # USB init
-    write /sys/class/android_usb/android0/iSerial ${ro.serialno}
-    mkdir /dev/usb-ffs 0770 shell shell
-    mkdir /dev/usb-ffs/adb 0770 shell shell
-    mount configfs none /config
-    mkdir /config/usb_gadget/g1 0770 shell shell
-    mkdir /config/usb_gadget/g1/strings/0x409 0770 shell shell
-    write /config/usb_gadget/g1/bcdUSB 0x0210
-    write /config/usb_gadget/g1/os_desc/use 1
-    write /config/usb_gadget/g1/strings/0x409/serialnumber ${ro.serialno}
-    write /config/usb_gadget/g1/strings/0x409/manufacturer ${ro.product.manufacturer}
-    write /config/usb_gadget/g1/strings/0x409/product ${ro.product.model}
-    mkdir /config/usb_gadget/g1/functions/mass_storage.usb0
-    mkdir /config/usb_gadget/g1/functions/mtp.gs0
-    write /config/usb_gadget/g1/functions/mtp.gs0/os_desc/interface.MTP/compatible_id "MTP"
-    mkdir /config/usb_gadget/g1/functions/ptp.gs1
-    mkdir /config/usb_gadget/g1/functions/accessory.gs2
-    mkdir /config/usb_gadget/g1/functions/audio_source.gs3
-    mkdir /config/usb_gadget/g1/functions/midi.gs5
-    mkdir /config/usb_gadget/g1/functions/ffs.adb
-    mkdir /config/usb_gadget/g1/functions/hid.gs0
-    mkdir /config/usb_gadget/g1/configs/b.1 0770 shell shell
-    mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
-    write /config/usb_gadget/g1/os_desc/b_vendor_code 0x1
-    write /config/usb_gadget/g1/os_desc/qw_sign "MSFT100"
-    write /config/usb_gadget/g1/configs/b.1/MaxPower 500
-    symlink /config/usb_gadget/g1/configs/b.1 /config/usb_gadget/g1/os_desc/b.1
-    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
-    write /sys/class/android_usb/android0/f_ffs/aliases adb
-
 on fs
     export LD_LIBRARY_PATH /system/lib:/vendor/lib:/vendor/lib/hw:/system/lib/hw
-
+    
 on late-fs
     #start hal(s) for decryption
     class_start early_hal
@@ -121,8 +92,6 @@ on post-fs
     write /proc/bootprof "MOBICORE: export MC_AUTH_TOKEN_PATH /vendor/persist/backup"
     export MC_AUTH_TOKEN_PATH /vendor/persist/backup
 
-
-
 on post-fs-data
     # We chown/chmod /data again because mount is run as root + defaults
     chown system system /data
@@ -139,90 +108,6 @@ on post-fs-data
     # Support A/B feature for boot region
     symlink /dev/block/mmcblk0boot0 /dev/block/platform/bootdevice/by-name/preloader_a
     symlink /dev/block/mmcblk0boot1 /dev/block/platform/bootdevice/by-name/preloader_b
-
-on boot
-    # USB Init
-    setprop sys.usb.configfs 1
-    setprop sys.usb.controller "musb-hdrc"
-    setprop sys.usb.acm_cnt 0
-    setprop sys.usb.acm_port0 ""
-    setprop sys.usb.acm_port1 ""
-    setprop sys.usb.temp ""
-    setprop sys.usb.acm_enable 0
-    setprop sys.usb.clear boot
-    write /sys/class/android_usb/android0/f_mtp/cpu_mask 0xF0
-    chmod 0664 /sys/class/android_usb/android0/iSerial
-    chown root system /sys/class/android_usb/android0/iSerial
-
-on charger
-    mkdir /config/usb_gadget/g1 0770 shell shell
-    write /config/usb_gadget/g1/idVendor 0x0E8D
-    write /config/usb_gadget/g1/bcdDevice 0x0223
-    write /config/usb_gadget/g1/bcdUSB 0x0200
-    mkdir /config/usb_gadget/g1/strings/0x409 0770
-    write /config/usb_gadget/g1/strings/0x409/serialnumber ${ro.serialno}
-    write /config/usb_gadget/g1/strings/0x409/manufacturer ${ro.product.manufacturer}
-    write /config/usb_gadget/g1/strings/0x409/product ${ro.product.model}
-    mkdir /config/usb_gadget/g1/functions/hid.gs0
-    mkdir /config/usb_gadget/g1/configs/b.1 0770 shell shell
-    mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
-    write /config/usb_gadget/g1/configs/b.1/MaxPower 500
-    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
-    setprop sys.usb.configfs 1
-    setprop sys.usb.controller "musb-hdrc"
-    setprop sys.usb.acm_cnt 0
-    setprop sys.usb.acm_port0 ""
-    setprop sys.usb.acm_port1 ""
-    setprop sys.usb.acm_enable 0
-    setprop sys.usb.clear boot
-    setprop sys.usb.config hid
-
-on property:sys.usb.config=none
-    write /config/usb_gadget/g1/UDC "none"
-    stop adbd
-    setprop sys.usb.ffs.ready 0
-    write /config/usb_gadget/g1/bDeviceClass 0
-    write /config/usb_gadget/g1/bDeviceSubClass 0
-    write /config/usb_gadget/g1/bDeviceProtocol 0
-    setprop sys.usb.state ${sys.usb.config}
-
-on property:sys.usb.config=mtp,adb
-    start adbd
-
-on property:sys.usb.config=adb
-    start adbd
-
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=mtp,adb
-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "mtp_adb"
-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/product ${sys.usb.product}
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
-    rm /config/usb_gadget/g1/configs/b.1/f4
-    rm /config/usb_gadget/g1/configs/b.1/f5
-    write /config/usb_gadget/g1/bcdDevice 0x0223
-    write /config/usb_gadget/g1/bcdUSB 0x0200
-    write /config/usb_gadget/g1/idVendor 0x1BBB
-    write /config/usb_gadget/g1/idProduct 0x0167
-    symlink /config/usb_gadget/g1/functions/mtp.gs0 /config/usb_gadget/g1/configs/b.1/f1
-    symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f2
-    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
-    setprop sys.usb.state ${sys.usb.config}
-
-on property:sys.usb.ffs.ready=1 && property:sys.usb.config=adb
-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/product ${sys.usb.product}
-    rm /config/usb_gadget/g1/configs/b.1/f1
-    rm /config/usb_gadget/g1/configs/b.1/f2
-    rm /config/usb_gadget/g1/configs/b.1/f3
-    rm /config/usb_gadget/g1/configs/b.1/f4
-    rm /config/usb_gadget/g1/configs/b.1/f5
-    write /config/usb_gadget/g1/idVendor 0x1BBB
-    write /config/usb_gadget/g1/idProduct 0x201C
-    symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
-    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
-setprop sys.usb.state ${sys.usb.config}
-
 
 on property:twrp.decrypt.done=true
     stop mobicore
@@ -255,29 +140,3 @@ on property:vold.decrypt=trigger_restart_framework
     write /proc/bootprof "MOBICORE: create /data/misc/mcRegistry ++ (FDE encrypted)"
     mkdir /data/misc/mcRegistry 0775 system system
     write /proc/bootprof "MOBICORE: create /data/misc/mcRegistry -- (FDE encrypted)"
-
-on property:sys.usb.charging=yes
-    write /sys/class/udc/musb-hdrc/device/cmode 2
-on property:sys.usb.charging=no
-    write /sys/class/udc/musb-hdrc/device/cmode 1
-
-on property:mediatek.em.usb.bypass.enable=0
-    write /sys/class/usb_rawbulk/gps/enable 1
-on property:mediatek.em.usb.bypass.enable=1
-    write /sys/class/usb_rawbulk/pcv/enable 1
-on property:mediatek.em.usb.bypass.enable=2
-    write /sys/class/usb_rawbulk/atc/enable 1
-on property:mediatek.em.usb.bypass.enable=3
-    write /sys/class/usb_rawbulk/ets/enable 1
-on property:mediatek.em.usb.bypass.enable=4
-    write /sys/class/usb_rawbulk/data/enable 1
-on property:mediatek.em.usb.bypass.disable=0
-    write /sys/class/usb_rawbulk/gps/enable 0
-on property:mediatek.em.usb.bypass.disable=1
-    write /sys/class/usb_rawbulk/pcv/enable 0
-on property:mediatek.em.usb.bypass.disable=2
-    write /sys/class/usb_rawbulk/atc/enable 0
-on property:mediatek.em.usb.bypass.disable=3
-    write /sys/class/usb_rawbulk/ets/enable 0
-on property:mediatek.em.usb.bypass.disable=4
-    write /sys/class/usb_rawbulk/data/enable 0
