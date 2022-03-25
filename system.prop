@@ -8,3 +8,4 @@ ro.allow.mock.location=0
 ro.debuggable=1
 sys.usb.product="ALCATEL 3T 8 TMO"
 persist.sys.usb.config=adb
+ro.sys.usb.storage.type=mtp

@@ -20,7 +20,6 @@ BOARD_USES_MTK_HARDWARE := true
 MTK_HARDWARE := true
 
 # Architecture
-## ARCHITECTURE
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := armeabi-v7a
@@ -69,7 +68,7 @@ RECOVERY_GRAPHICS_USE_LINELENGTH := true
 
 # TWRP Configuration
 TW_THEME := portrait_hdpi
-TW_EXTRA_LANGUAGES := false
+TW_EXTRA_LANGUAGES := false # until I can clean up this tree a bit, we need the space
 TW_DEFAULT_LANGUAGE := en
 TW_SCREEN_BLANK_ON_BOOT := false
 TW_INPUT_BLACKLIST := "hbtp_vm"
@@ -79,10 +78,9 @@ TW_MAX_BRIGHTNESS := 255
 TW_DEFAULT_BRIGHTNESS := 150
 TW_CUSTOM_CPU_TEMP_PATH := /sys/devices/virtual/thermal/thermal_zone1/temp
 TW_NO_BATT_PERCENT := false
-#TW_EXCLUDE_DEFAULT_USB_INIT := true
+TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_EXCLUDE_TWRPAPP := true
 TW_EXCLUDE_SUPERSU := true
-TW_NO_SCREEN_TIMEOUT := true
 
 # Encryption
 PLATFORM_VERSION := 16.1.0
